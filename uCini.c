@@ -12,6 +12,7 @@
 * uCiniParse
 ******************************************************************************/
 int uCiniParse(const struct tIni* ini, char* fileName) {
+  int values = 0;
   const struct tSection* sectionAct = NULL;
   FILE_* iniFile = stdin_;
   if (fileName) iniFile = fopen_(fileName, "r");
@@ -68,16 +69,19 @@ int uCiniParse(const struct tIni* ini, char* fileName) {
             strcpy(entryTmp->data, token2);
             break;
         }
+        values++;
       }
     }
   }
   fclose_(iniFile);
+  return values;
 }
 
 /******************************************************************************
 * uCiniDump
 ******************************************************************************/
 int uCiniDump(const struct tIni* ini, char* fileName) {
+  int values = 0;
   int iSection;
   char line[20];
   const struct tSection* sectionAct = NULL;
@@ -127,11 +131,13 @@ int uCiniDump(const struct tIni* ini, char* fileName) {
           strcat(line, entryTmp->data); 
           break;
       }
+      values++;
       strcat(line, "\n");
       fputs_(line, iniFile);
     }
   }
   if (fileName) fclose_(iniFile);
+  return values;
 }
 
 /******************************************************************************
