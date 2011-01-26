@@ -11,7 +11,7 @@
 /******************************************************************************
 * uCiniParse
 ******************************************************************************/
-int uCiniParse(const struct tIni* ini, char* fileName) {
+int uCiniParse(const struct tIni *pIni, char *fileName) {
   int values = 0;
   const struct tSection* sectionAct = NULL;
   FILE_* iniFile = stdin_;
@@ -20,16 +20,16 @@ int uCiniParse(const struct tIni* ini, char* fileName) {
   // Line loop
   while (1) {
     int i;
-    char line[20];
+    char line[MAX_LINE_LENGTH];
     char *token1, *token2;
     if (!fgets_(line, MAX_LINE_LENGTH, iniFile)) break; // EOF, leave line loop
     // Check for section changes...
     if (line[0] == '[') {
       sectionAct = NULL;
       token1 = strtok(line, "[]");
-      for (i = 0; i < ini->nSection; ++i) {
-        const struct tSection* sectionTmp = ini->sections + i;
-        if (!strncmp(token1, sectionTmp->name, 20)) {
+      for (i = 0; i < pIni->nSection; ++i) {
+        const struct tSection* sectionTmp = pIni->sections + i;
+        if (!strncmp(token1, sectionTmp->name, MAX_LINE_LENGTH)) {
           sectionAct = sectionTmp;
           break;
         }
@@ -45,7 +45,7 @@ int uCiniParse(const struct tIni* ini, char* fileName) {
         const struct tEntry* entryTmp = sectionAct->entries + i;
         char type = entryTmp->type & eType_MASK_TYPE;
         char indx = entryTmp->type & eType_MASK_NUM;
-        if (strncmp(token1, entryTmp->name, 20)) continue;
+        if (strncmp(token1, entryTmp->name, MAX_LINE_LENGTH)) continue;
 
         switch (type) {
           // function
@@ -80,17 +80,16 @@ int uCiniParse(const struct tIni* ini, char* fileName) {
 /******************************************************************************
 * uCiniDump
 ******************************************************************************/
-int uCiniDump(const struct tIni* ini, char* fileName) {
+int uCiniDump(const struct tIni* pIni, char* fileName) {
   int values = 0;
   int iSection;
-  char line[20];
-  const struct tSection* sectionAct = NULL;
+  char line[MAX_LINE_LENGTH];
   FILE_* iniFile = stdout_;
   if (fileName) iniFile = fopen_(fileName, "w");
 
   // Section loop
-  for (iSection = 0; iSection < ini->nSection; ++iSection) {
-    const struct tSection* sectionAct = ini->sections + iSection;
+  for (iSection = 0; iSection < pIni->nSection; ++iSection) {
+    const struct tSection* sectionAct = pIni->sections + iSection;
     int iEntry;
     strcpy(line, "[");
     strcat(line, sectionAct->name);
@@ -143,7 +142,7 @@ int uCiniDump(const struct tIni* ini, char* fileName) {
 /******************************************************************************
 * sscand
 ******************************************************************************/
-int sscand(char* str, long* pNum) {
+int sscand(char *str, long *pNum) {
   long number = 0;
   int sign = 1;
   if (*str == '-') { str++; sign = -1; }
@@ -162,7 +161,7 @@ int sscand(char* str, long* pNum) {
 /******************************************************************************
 * scatd - calls itself recursively to print MSdigit first
 ******************************************************************************/
-void scatd(char* str, long num) {
+void scatd(char *str, long num) {
   long div; 
   int  mod;
   char digit[2]; // zero term. string to hold one decimal digit
