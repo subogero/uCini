@@ -13,6 +13,8 @@
 ******************************************************************************/
 int uCiniParse(const struct tIni *pIni, char *fileName) {
   int values = 0;
+  int ofsSection = 0;
+  int ofsEntry = 0;
   const struct tSection* sectionAct = NULL;
   FILE_* iniFile = stdin_;
   if (fileName) iniFile = fopen_(fileName, "r");
@@ -28,9 +30,11 @@ int uCiniParse(const struct tIni *pIni, char *fileName) {
       sectionAct = NULL;
       token1 = strtok(line, "[]");
       for (i = 0; i < pIni->nSection; ++i) {
-        const struct tSection* sectionTmp = pIni->sections + i;
+        int iSection = (i + ofsSection) % pIni->nSection;
+        const struct tSection* sectionTmp = pIni->sections + iSection;
         if (!strncmp(token1, sectionTmp->name, MAX_LINE_LENGTH)) {
           sectionAct = sectionTmp;
+          ofsSection = iSection;
           break;
         }
       }
@@ -42,11 +46,13 @@ int uCiniParse(const struct tIni *pIni, char *fileName) {
       token1 = strtok(line, " \t="); // name  no whitespace, end with =
       token2 = strtok(NULL, "\r\n"); // value between = and CR/LF
       for (i = 0; i < sectionAct->nEntry; ++i) {
-        const struct tEntry* entryTmp = sectionAct->entries + i;
+        int iEntry = (i + ofsEntry) % sectionAct->nEntry;
+        const struct tEntry* entryTmp = sectionAct->entries + iEntry;
         char type = entryTmp->type & eType_MASK_TYPE;
         char indx = entryTmp->type & eType_MASK_NUM;
         if (strncmp(token1, entryTmp->name, MAX_LINE_LENGTH)) continue;
 
+        ofsEntry = iEntry;
         switch (type) {
           // function
           case eType_FUNC:
