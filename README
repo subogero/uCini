@@ -1,0 +1,17 @@
+A lightweight library for reading data from and dumping data to ini-files,
+developed for embedded micro-controller environments.
+
+It declares some structure types for mapping your mostly static data
+to ini-file sections and entries. When parsing an ini file, only the values
+mentioned in the file are updated in your internal data.
+You can also dump your entire data structure into an ini file.
+
+Internal data can be accessed as strings, unsigned or signed integers
+(char, short, long), as flags in a char or via custom read/write functions.
+
+You can connect it to your system by defining an stdio_.h file,
+that shall declare a small subset of the standard stdio.h:
+FILE_ stdin_ stdout_ stderr_ fopen_ fclose_ fgets_ fputs_ 
+
+This way it's possible to use uCini even in very small systems
+without OS / file-system / C-library.
