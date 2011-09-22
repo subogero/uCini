@@ -16,7 +16,7 @@
 typedef struct {
 } FILE_;
 
-FILE_* stdin, stdout, stderr;
+FILE_* stdin_, stdout_, stderr_;
 
 FILE_* fopen_(char* filename, const char* mode); // filename is block ID for now
 int    fclose_(FILE_* stream);
