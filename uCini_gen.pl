@@ -75,10 +75,11 @@ foreach $root (sort keys %roots) {
                          : $1 eq 'str' ? "eType_SZ"
                          : $1 eq 'fun' ? "eType_FUNC"
                          :               "";
-            if ($1 =~ /[us]/ && $2 =~ /[124]/ || $1 eq 'b' && $2 =~ /[0-7]/ || !$2) { 
-                $type_str .= $2;
+            my $n = $2;
+            if ($1 =~ /[us]/ && $n =~ /[124]/ || $1 eq 'b' && $n =~ /[0-7]/) { 
+                $type_str .= "+$n";
             }
-            else {
+            elsif ($n) {
                 warn "Ini-file $root section $section entry $entry: invalid type $1$2\n";
                 next;
             }
