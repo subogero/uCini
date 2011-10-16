@@ -88,11 +88,17 @@ foreach $root (sort keys %roots) {
         print "};\n";
     }
     # Print section table
-    print "static const struct tSection $root [] = {\n";
+    print "static const struct tSection ${root}_sections [] = {\n";
     foreach $section (sort keys %root_obj) {
         my %sect_obj = %{$root_obj{$section}};
         my $sect_size = keys %{$sect_obj{entries}};
         print "  { \"$section\", $sect_obj{name}, $sect_size },\n";
     }
     print "};\n";
+    # Print root object
+    my $root_size = keys %root_obj;
+    print "static const struct tIni $root = {\n";
+    print "  ${root}_sections, $root_size \n";
+    print "};\n";
 }
+
