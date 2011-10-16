@@ -16,12 +16,6 @@ Specification format:
 name= ; address; type
 ...
 
-Note that the specification is in a valid ini format.
-You can have multiple roots, those and sections can show up multiple times.
-Sections with the same id can be placed in multiple roots,
-but internal section_names must be different.
-Values with the same names can be placed in multiple sections,
-the actual entry will belong to the most recent section.
 - root is the name of your struct tIni root-object representing an ini-file
 - section_name internal name of struct tSection object
 - address is in C-format, &foo for a scalar, foo for arrays and functions
@@ -31,6 +25,13 @@ the actual entry will belong to the most recent section.
   b[0-7] flag on bit position 0 to 7
   str    string zero terminated 
   fun    access function
+
+Note that the specification is in a valid ini format.
+You can have multiple roots, those and sections can show up multiple times.
+Sections with the same id can be placed in multiple roots,
+but internal section_names must be different.
+Values with the same names can be placed in multiple sections,
+the actual entry will belong to the most recent section.
 EOF
 exit 0;
 }
@@ -39,22 +40,31 @@ exit 0;
 my %roots;
 my $root;
 my $section;
+my $line_no = 1;
 while (<>) {
+    my $parsed;
     s/[\r\n]//g;
-    # Look for root
-    if (/^;(\w+)/) { $root = $1 }
-    next if (!$root);
-    # Look for a section
-    if (/^\[(\w+)\]; *(\w+)/) {
+    # Root: 1st word after a leading semicolon
+    if (/^;(\w+)/) { 
+        $root = $1;
+        $parsed = 1;
+    }
+    # Section: word in brackets, semicolon, word
+    if ($root && /^\[(\w+)\]; *(\w+)/) {
         $section = $1;
         $roots{$root}->{$section}->{name} = $2;
+        $parsed = 1;
     }
-    next if (!$section);
-    # Look for an entry
-    if (/^(\w+) *= *\w*; *(.+); *(\w+)/) {
+    # Entry: word, equals, optional default, semicolon, address, semicolon, type
+    if ($section && /^(\w+) *= *\w*; *(.+); *(\w+)/) {
         $roots{$root}->{$section}->{entries}->{$1}->{address} = $2;
         $roots{$root}->{$section}->{entries}->{$1}->{type} = $3;
+        $roots{$root}->{$section}->{entries}->{$1}->{line_no} = $line_no;
+        $parsed = 1;
     }
+    # Print warning for unrecognized lines
+    warn "Line $line_no unrecognized: $_\n" if ($_ && !$parsed);
+    $line_no++;
 }
 
 # Print C-code
@@ -69,18 +79,18 @@ foreach $root (sort keys %roots) {
         foreach my $entry (sort keys %sect_entries) {
             my %entry_obj = %{$sect_entries{$entry}};
             $entry_obj{type} =~ /^([subtrfn]+)([0-7]?)$/;
-            my $type_str = $1 eq 'u'   ? "eType_INT"
-                         : $1 eq 's'   ? "eType_INT+eType_SGND"
-                         : $1 eq 'b'   ? "eType_FLAG"
-                         : $1 eq 'str' ? "eType_SZ"
-                         : $1 eq 'fun' ? "eType_FUNC"
+            my ($t, $n)      =  ( $1,         $2       );
+            my $type_str = $t eq 'u'   ? "eType_INT"
+                         : $t eq 's'   ? "eType_INT+eType_SGND"
+                         : $t eq 'b'   ? "eType_FLAG"
+                         : $t eq 'str' ? "eType_SZ"
+                         : $t eq 'fun' ? "eType_FUNC"
                          :               "";
-            my $n = $2;
-            if ($1 =~ /[us]/ && $n =~ /[124]/ || $1 eq 'b' && $n =~ /[0-7]/) { 
+            if ($t =~ /[us]/ && $n =~ /[124]/ || $t eq 'b' && $n =~ /[0-7]/) { 
                 $type_str .= "+$n";
             }
             elsif ($n) {
-                warn "Ini-file $root section $section entry $entry: invalid type $1$2\n";
+                warn "Line $entry_obj{line_no} invalid type: $t$n\n";
                 next;
             }
             print "  { \"$entry\", $entry_obj{address}, $type_str },\n";
