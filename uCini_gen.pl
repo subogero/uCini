@@ -13,7 +13,7 @@ or from standard input and prints the C code to standard output.
 Specification format:
 ;root
 [section]; section_name
-name=default_value; address; type
+name= ; address; type
 ...
 
 Note that the specification is in a valid ini format.
@@ -51,7 +51,7 @@ while (<>) {
     }
     next if (!$section);
     # Look for an entry
-    if (/^(\w+) *= *\w+; *(.+); *(\w+)/) {
+    if (/^(\w+) *= *\w*; *(.+); *(\w+)/) {
         $roots{$root}->{$section}->{entries}->{$1}->{address} = $2;
         $roots{$root}->{$section}->{entries}->{$1}->{type} = $3;
     }
