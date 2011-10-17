@@ -11,7 +11,8 @@
 /******************************************************************************
 * uCiniParse
 ******************************************************************************/
-int uCiniParse(const struct tIni *pIni, char *fileName) {
+int uCiniParse(const struct tIni *pIni, char *fileName)
+{
   int values = 0;
   int ofsSection = 0;
   int ofsEntry = 0;
@@ -54,26 +55,26 @@ int uCiniParse(const struct tIni *pIni, char *fileName) {
 
         ofsEntry = iEntry;
         switch (type) {
-          // function
-          case eType_FUNC:
-            ((tIniFunc)entryTmp->data)(token2, 0);
-            break;
-          // flag in a byte
-          case eType_FLAG:
-            if (!strcmp(token2, "y")) SET(*(char*)entryTmp->data, indx);
-            if (!strcmp(token2, "n")) CLR(*(char*)entryTmp->data, indx);
-            break;
-          // char short long
-          case eType_INT: {
-            long number;
-            if (!sscand(token2, &number)) continue;
-            memcpy(entryTmp->data, &number, indx);
-            break;
-          }
-          // raw string
-          case eType_SZ:
-            strcpy(entryTmp->data, token2);
-            break;
+        // function
+        case eType_FUNC:
+          ((tIniFunc)entryTmp->data)(token2, 0);
+          break;
+        // flag in a byte
+        case eType_FLAG:
+          if (!strcmp(token2, "y")) SET(*(char*)entryTmp->data, indx);
+          if (!strcmp(token2, "n")) CLR(*(char*)entryTmp->data, indx);
+          break;
+        // char short long
+        case eType_INT: {
+          long number;
+          if (!sscand(token2, &number)) continue;
+          memcpy(entryTmp->data, &number, indx);
+          break;
+        }
+        // raw string
+        case eType_SZ:
+          strcpy(entryTmp->data, token2);
+          break;
         }
         values++;
       }
@@ -86,7 +87,8 @@ int uCiniParse(const struct tIni *pIni, char *fileName) {
 /******************************************************************************
 * uCiniDump
 ******************************************************************************/
-int uCiniDump(const struct tIni* pIni, char* fileName) {
+int uCiniDump(const struct tIni* pIni, char* fileName)
+{
   int values = 0;
   int iSection;
   char line[MAX_LINE_LENGTH];
@@ -112,29 +114,29 @@ int uCiniDump(const struct tIni* pIni, char* fileName) {
       strcat(line, "=");
 
       switch (type) {
-        // function
-        case eType_FUNC:
-          ((tIniFunc)entryTmp->data)(line, 1);
-          break;
-        // flag in a byte
-        case eType_FLAG:
-          strcat(line, GET(*(char*)entryTmp->data, indx) ? "y" : "n");
-          break;
-        // char short long
-        case eType_INT:
-          switch (indx + sgnd) {
-            case 1:   scatd(line, *(unsigned char* )entryTmp->data); break;
-            case 2:   scatd(line, *(unsigned short*)entryTmp->data); break;
-            case 4:   scatd(line, *(unsigned long* )entryTmp->data); break;
-            case 1+eType_SGND: scatd(line, *(char* )entryTmp->data); break;
-            case 2+eType_SGND: scatd(line, *(short*)entryTmp->data); break;
-            case 4+eType_SGND: scatd(line, *(long* )entryTmp->data); break;
-          }
-          break;
-        // raw string
-        case eType_SZ:
-          strcat(line, entryTmp->data); 
-          break;
+      // function
+      case eType_FUNC:
+        ((tIniFunc)entryTmp->data)(line, 1);
+        break;
+      // flag in a byte
+      case eType_FLAG:
+        strcat(line, GET(*(char*)entryTmp->data, indx) ? "y" : "n");
+        break;
+      // char short long
+      case eType_INT:
+        switch (indx + sgnd) {
+        case 1:   scatd(line, *(unsigned char* )entryTmp->data); break;
+        case 2:   scatd(line, *(unsigned short*)entryTmp->data); break;
+        case 4:   scatd(line, *(unsigned long* )entryTmp->data); break;
+        case 1+eType_SGND: scatd(line, *(char* )entryTmp->data); break;
+        case 2+eType_SGND: scatd(line, *(short*)entryTmp->data); break;
+        case 4+eType_SGND: scatd(line, *(long* )entryTmp->data); break;
+        }
+        break;
+      // raw string
+      case eType_SZ:
+        strcat(line, entryTmp->data);
+        break;
       }
       values++;
       strcat(line, "\n");
@@ -148,7 +150,8 @@ int uCiniDump(const struct tIni* pIni, char* fileName) {
 /******************************************************************************
 * sscand
 ******************************************************************************/
-int sscand(char *str, long *pNum) {
+int sscand(char *str, long *pNum)
+{
   long number = 0;
   int sign = 1;
   if (*str == '-') { str++; sign = -1; }
@@ -167,7 +170,8 @@ int sscand(char *str, long *pNum) {
 /******************************************************************************
 * scatd - calls itself recursively to print MSdigit first
 ******************************************************************************/
-void scatd(char *str, long num) {
+void scatd(char *str, long num)
+{
   long div; 
   int  mod;
   char digit[2]; // zero term. string to hold one decimal digit
