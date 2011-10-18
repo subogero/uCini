@@ -45,20 +45,20 @@ enum eType {
 #define CLR(data,pos) ((data) &= ~MASK(pos))
 
 // Data structure types for mapping ini-to-data
-typedef void (*tIniFunc)(char* str, int write); // read/write func.prototype
+typedef void (*tIniFunc)(char *str, int write); // read/write func.prototype
 
 struct tEntry {
-  const char* name; // name of value before =
-  void* data;       // address of data of access function
+  const char *name; // name of value before =
+  void *data;       // address of data of access function
   enum eType type;  // see above
 };
 struct tSection {
-  const char* name;             // section name, the one between []
-  const struct tEntry* entries; // array of tEntry
+  const char *name;             // section name, the one between []
+  const struct tEntry *entries; // array of tEntry
   int nEntry;                   // size of array
 };
 struct tIni {
-  const struct tSection* sections; // array of tSection
+  const struct tSection *sections; // array of tSection
   int nSection;                    // size of array
 };
 
@@ -68,7 +68,7 @@ struct tIni {
 * - fileName : filename, or address of a memory/EEPROM block number, whatever
 * Side effect: update any internal value defined in the ini file
 ******************************************************************************/
-int uCiniParse(const struct tIni* ini, char* fileName);
+int uCiniParse(const struct tIni *ini, char *fileName);
 
 /******************************************************************************
 * Returns    : number of values printed, excluding sections
@@ -76,7 +76,7 @@ int uCiniParse(const struct tIni* ini, char* fileName);
 * - fileName : filename, or address of a memory/EEPROM block number, whatever
 * Side effect: serialize your ENTIRE data structure into ini-file
 ******************************************************************************/
-int uCiniDump(const struct tIni* ini, char* fileName);
+int uCiniDump(const struct tIni *ini, char *fileName);
 
 /******************************************************************************
 * Returns    : 1 if str holds a valid decimal number
@@ -84,12 +84,12 @@ int uCiniDump(const struct tIni* ini, char* fileName);
 * - pNum     : address of variable number is scanned into
 * Side effect: update *pNum only if str is a valid decimal number
 ******************************************************************************/
-int sscand(char* str, long* pNum);
+int sscand(char *str, long *pNum);
 
 /******************************************************************************
 * - str      : string decimal number is CONCATENATED to
 * - num      : number to print
 ******************************************************************************/
-void scatd(char* str, long num);
+void scatd(char *str, long num);
 
 #endif

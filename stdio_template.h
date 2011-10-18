@@ -16,12 +16,12 @@
 typedef struct {
 } FILE_;
 
-FILE_* stdin_, stdout_, stderr_;
+FILE_ *stdin_, *stdout_, *stderr_;
 
-FILE_* fopen_(char* filename, const char* mode); // filename is block ID for now
-int    fclose_(FILE_* stream);
-char*  fgets_(char* str, int num, FILE_* stream);
-int    fputs_(char* str, FILE_* stream);
+FILE_ *fopen_(char *filename, const char *mode);
+int    fclose_(FILE_ *stream);
+char  *fgets_(char *str, int num, FILE_ *stream);
+int    fputs_(char *str, FILE_ *stream);
 
 #define MAX_LINE_LENGTH 80
 

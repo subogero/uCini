@@ -16,8 +16,8 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
   int values = 0;
   int ofsSection = 0;
   int ofsEntry = 0;
-  const struct tSection* sectionAct = NULL;
-  FILE_* iniFile = stdin_;
+  const struct tSection *sectionAct = NULL;
+  FILE_ *iniFile = stdin_;
   if (fileName) iniFile = fopen_(fileName, "r");
 
   // Line loop
@@ -32,7 +32,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
       token1 = strtok(line, "[]");
       for (i = 0; i < pIni->nSection; ++i) {
         int iSection = (i + ofsSection) % pIni->nSection;
-        const struct tSection* sectionTmp = pIni->sections + iSection;
+        const struct tSection *sectionTmp = pIni->sections + iSection;
         if (!strncmp(token1, sectionTmp->name, MAX_LINE_LENGTH)) {
           sectionAct = sectionTmp;
           ofsSection = iSection;
@@ -48,7 +48,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
       token2 = strtok(NULL, "\r\n"); // value between = and CR/LF
       for (i = 0; i < sectionAct->nEntry; ++i) {
         int iEntry = (i + ofsEntry) % sectionAct->nEntry;
-        const struct tEntry* entryTmp = sectionAct->entries + iEntry;
+        const struct tEntry *entryTmp = sectionAct->entries + iEntry;
         char type = entryTmp->type & eType_MASK_TYPE;
         char indx = entryTmp->type & eType_MASK_NUM;
         if (strncmp(token1, entryTmp->name, MAX_LINE_LENGTH)) continue;
@@ -87,17 +87,17 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
 /******************************************************************************
 * uCiniDump
 ******************************************************************************/
-int uCiniDump(const struct tIni* pIni, char* fileName)
+int uCiniDump(const struct tIni *pIni, char *fileName)
 {
   int values = 0;
   int iSection;
   char line[MAX_LINE_LENGTH];
-  FILE_* iniFile = stdout_;
+  FILE_ *iniFile = stdout_;
   if (fileName) iniFile = fopen_(fileName, "w");
 
   // Section loop
   for (iSection = 0; iSection < pIni->nSection; ++iSection) {
-    const struct tSection* sectionAct = pIni->sections + iSection;
+    const struct tSection *sectionAct = pIni->sections + iSection;
     int iEntry;
     strcpy(line, "[");
     strcat(line, sectionAct->name);
@@ -106,7 +106,7 @@ int uCiniDump(const struct tIni* pIni, char* fileName)
 
     // Entry loop for each section
     for (iEntry = 0; iEntry < sectionAct->nEntry; ++iEntry) {
-      const struct tEntry* entryTmp = sectionAct->entries + iEntry;
+      const struct tEntry *entryTmp = sectionAct->entries + iEntry;
       char type = entryTmp->type & eType_MASK_TYPE;
       char sgnd = entryTmp->type & eType_SGND;
       char indx = entryTmp->type & eType_MASK_NUM;
@@ -125,12 +125,12 @@ int uCiniDump(const struct tIni* pIni, char* fileName)
       // char short long
       case eType_INT:
         switch (indx + sgnd) {
-        case 1:   scatd(line, *(unsigned char* )entryTmp->data); break;
+        case 1:   scatd(line, *(unsigned char *)entryTmp->data); break;
         case 2:   scatd(line, *(unsigned short*)entryTmp->data); break;
-        case 4:   scatd(line, *(unsigned long* )entryTmp->data); break;
-        case 1+eType_SGND: scatd(line, *(char* )entryTmp->data); break;
+        case 4:   scatd(line, *(unsigned long *)entryTmp->data); break;
+        case 1+eType_SGND: scatd(line, *(char *)entryTmp->data); break;
         case 2+eType_SGND: scatd(line, *(short*)entryTmp->data); break;
-        case 4+eType_SGND: scatd(line, *(long* )entryTmp->data); break;
+        case 4+eType_SGND: scatd(line, *(long *)entryTmp->data); break;
         }
         break;
       // raw string
