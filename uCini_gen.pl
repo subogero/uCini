@@ -91,6 +91,7 @@ foreach $root (sort keys %roots) {
             }
             elsif ($n) {
                 warn "Line $entry_obj{line_no} invalid type: $t$n\n";
+                delete $sect_obj{entries}->{$entry};
                 next;
             }
             print "  { \"$entry\", $entry_obj{address}, $type_str },\n";
