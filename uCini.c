@@ -68,7 +68,11 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
         case eType_INT: {
           long number;
           if (!sscand(token2, &number)) continue;
-          memcpy(entryTmp->data, &number, indx);
+          switch (indx) {
+          case 1: *(char *)entryTmp->data = number; break;
+          case 2: *(short*)entryTmp->data = number; break;
+          case 4: *(long *)entryTmp->data = number; break;
+          }
           break;
         }
         // raw string
