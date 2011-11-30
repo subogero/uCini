@@ -44,7 +44,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
     // Skip all entry lines if section invalid,
     else if (sectionAct) {
       // or parse params within section
-      token1 = strtok(line, " \t="); // name  no whitespace, end with =
+      token1 = strtok(line, "="); // name  no whitespace, end with =
       token2 = strtok(NULL, "\r\n"); // value between = and CR/LF
       for (i = 0; i < sectionAct->nEntry; ++i) {
         int iEntry = (i + ofsEntry) % sectionAct->nEntry;

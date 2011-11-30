@@ -4,11 +4,13 @@
 *******************************************************************************
 * A lightweight library to read and write ini files in embedded uC systems.
 *
-* Section names: delimited by [], whitespace is allowed and significant
-* Entry names  : whitespace and '=' not allowed
-* Values       : delimited by '=' CR/LF, whitespace remains part of value
-* Everything is case sensitive.
+* Parsing rules for ini formatted files:
+* - Section names: between [] on the beginning of line
+* - Entry names  : before 1st '=' of line
+* - Values       : between 1st '=' and linefeed (CR/LF)
+* Everything is case sensitive. Whitespace is part of each token.
 *
+* Mapping to internal data:
 * eType_         internal type             ini format / notes
 * -----------------------------------------------------------------------------
 * SZ             string zero.term.         all chars between '=' and CR/LF
