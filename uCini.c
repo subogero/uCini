@@ -26,6 +26,9 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
     char line[MAX_LINE_LENGTH];
     char *token1, *token2;
     if (!fgets_(line, MAX_LINE_LENGTH, iniFile)) break; // EOF, leave line loop
+    // Add trailing LF to line if missing
+    i = strlen(line);
+    if (line[i - 1] != '\n') line[i] = '\n';
     // Check for section changes...
     if (line[0] == '[') {
       sectionAct = NULL;
@@ -46,6 +49,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
       // or parse params within section
       token1 = strtok(line, "="); // name  no whitespace, end with =
       token2 = strtok(NULL, "\r\n"); // value between = and CR/LF
+      if (token1 == NULL || token2 == NULL) continue;
       for (i = 0; i < sectionAct->nEntry; ++i) {
         int iEntry = (i + ofsEntry) % sectionAct->nEntry;
         const struct tEntry *entryTmp = sectionAct->entries + iEntry;
