@@ -9,6 +9,10 @@ You can also dump your entire data structure into an ini file.
 Internal data can be accessed as strings, unsigned or signed integers
 (char, short, long), as flags in a char or via custom read/write functions.
 
+You define the mapping between ini-entries and internal data as an ini file,
+and then uCini_gen.pl will generate the related C-code, including access
+functions for non-addressable symbols.
+
 You can connect it to your system by defining an stdio_.h file,
 that shall declare a small subset of the standard stdio.h:
 FILE_ stdin_ stdout_ stderr_ fopen_ fclose_ fgets_ fputs_ 

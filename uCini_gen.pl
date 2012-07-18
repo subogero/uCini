@@ -26,6 +26,7 @@ name= ; address; type
   b[0-7] flag on bit position 0 to 7
   str    string zero terminated 
   fun    access function
+  sym    generate access function for a symbol, e.g. bitfield
 
 Note that the specification is in a valid ini format.
 You can have multiple roots, those and sections can show up multiple times.
@@ -46,6 +47,7 @@ if ($ARGV[0] eq '-o') {
 
 # Parse spec from stdin or remaining file list in ARGV
 my %roots;
+my %symbols;
 my $root;
 my $section;
 my $line_no = 1;
@@ -63,14 +65,20 @@ while (<>) {
     # Entry: word, equals, optional default, semicolon, address, semicolon, type
     elsif ($section && /^(\w+) *= *\w*; *(.+); *(\w+)/) {
         my ($name, $address, $type) = ($1, $2, $3);
-        $type =~ /^([subtrfn]+)([0-7]?)$/;
+        $type =~ /^([subtrfnym]+)([0-7]?)$/;
         my ($t, $n) = ($1,       $2     );
         my $type_str = $t eq 'u'   && $n =~ /[124]/ ? "$n+eType_INT"
                      : $t eq 's'   && $n =~ /[124]/ ? "$n+eType_INT+eType_SGND"
                      : $t eq 'b'   && $n =~ /[0-7]/ ? "$n+eType_FLAG"
                      : $type eq 'str'               ? "eType_SZ"
                      : $type eq 'fun'               ? "eType_FUNC"
+                     : $type eq 'sym'               ? "eType_FUNC"
                      :                                "";
+        if ($type eq "sym") {
+            my $func = "__".$root."_".$section."_".$name;
+            $symbols{$func} = $address;
+            $address = $func;
+        }
         if ($type_str) {
             $roots{$root}->{$section}->{entries}->{$name}->{address}  = $address;
             $roots{$root}->{$section}->{entries}->{$name}->{type_str} = $type_str;
@@ -99,6 +107,12 @@ print <<COMMENT;
  * To be included only once into a single C-file!
  */
 COMMENT
+# Print symbol access function prototypes
+foreach (sort keys %symbols) {
+    print "static void $_(char *str, int write);\n";
+}
+print "\n";
+# Print ini-data mapping
 foreach $root (sort keys %roots) {
     my %root_obj = %{$roots{$root}};
     # Print entry table of each section
@@ -126,4 +140,19 @@ foreach $root (sort keys %roots) {
     print "static const struct tIni $root = {\n";
     print "  ${root}_sections, $root_size \n";
     print "};\n";
+}
+# Print symbol access function bodies
+foreach (sort keys %symbols) {
+print <<EOF;
+
+static void $_(char *str, int write)
+{
+  if (write) {
+    scatd(str, $symbols{$_});
+  } else {
+    long num;
+    if (sscand(str, &num)) $symbols{$_} = num;
+  }
+}
+EOF
 }
