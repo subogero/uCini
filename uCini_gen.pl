@@ -56,8 +56,9 @@ my $line_no = 1;
 while (<>) {
     s/[\r\n]//g;
     # Root: 1st word after a leading semicolon
-    if (/^;(\w+)/) { 
+    if (/^;(\w+)$/) {
         $root = $1;
+        $section = '';
     }
     # Section: word in brackets, semicolon, word
     elsif ($root && /^\[(\w+)\]; *(\w+)/) {
@@ -77,7 +78,7 @@ while (<>) {
                      : $type eq 'fun'               ? "eType_FUNC"
                      : $type eq 'sym'               ? "eType_FUNC"
                      :                                "";
-        $address =~ s/^/&/ if $t =~ /^u|s|b$/;
+        $address =~ s/^/&/ if $t =~ /^(u|s|b)$/ && $address !~ /&/;
         if ($type eq "sym") {
             my $func = "__".$root."_".$section."_".$name;
             $symbols{$func} = $address;
@@ -91,8 +92,8 @@ while (<>) {
             warn "Line $line_no invalid type: $type\n";
         }
     }
-    # Print warning for unrecognized lines
-    else {
+    # Print warning for unrecognized lines that are not empty or comments
+    elsif (/^ *[^;].*$/) {
         warn "Line $line_no unrecognized: $_\n";
     }
     $line_no++;
