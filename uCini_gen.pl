@@ -69,14 +69,15 @@ while (<>) {
     elsif ($section && /^(\w+) *= *\w*; *(.+); *(\w+)/) {
         my ($name, $address, $type) = ($1, $2, $3);
         $address =~ s/^&//; # Strip address operator, will be added later
-        $type =~ /^([subtrfnym]+)([0-7]?)$/;
-        my ($t, $n) = ($1,       $2     );
-        my $type_str = $t eq 'u'   && $n =~ /[124]/ ? "$n+eType_INT"
-                     : $t eq 's'   && $n =~ /[124]/ ? "$n+eType_INT+eType_SGND"
-                     : $t eq 'b'   && $n =~ /[0-7]/ ? "$n+eType_FLAG"
-                     : $type eq 'str'               ? "eType_SZ"
-                     : $type eq 'fun'               ? "eType_FUNC"
-                     : $type eq 'sym'               ? "eType_FUNC"
+        $type =~ /^ ([subtrfnym]+) ([0-7]?) ([0-7]?) $/x;
+        my ($t, $n, $s) = ($1,     $2,      $3);
+        my $type_str = $t eq 'b' && $s != ''      ? "$n+eType_MASK_ALTT+eType_BITF1*$s"
+                     : $t eq 'u' && $n =~ /[124]/ ? "$n+eType_INT"
+                     : $t eq 's' && $n =~ /[124]/ ? "$n+eType_INT+eType_SGND"
+                     : $t eq 'b' && $n =~ /[0-7]/ ? "$n+eType_FLAG"
+                     : $type eq 'str'             ? "eType_SZ"
+                     : $type eq 'fun'             ? "eType_FUNC"
+                     : $type eq 'sym'             ? "eType_FUNC"
                      :                                "";
         $address =~ s/^/&/ if $t =~ /^(u|s|b)$/ && $address !~ /&/;
         if ($type eq "sym") {
