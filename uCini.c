@@ -8,6 +8,11 @@
 #include "stdio_.h"
 #include <string.h>
 
+// Bitfield operations.
+static unsigned char BF_MASK(int pos, int size);
+static unsigned char BF_RD(unsigned char *byte, int pos, int size);
+static void BF_WR(unsigned char *byte, int pos, int size, unsigned char data);
+
 /******************************************************************************
 * uCiniParse
 ******************************************************************************/
@@ -51,10 +56,12 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
       token2 = strtok(NULL, "\r\n"); // value between = and CR/LF
       if (token1 == NULL || token2 == NULL) continue;
       for (i = 0; i < sectionAct->nEntry; ++i) {
+        unsigned char size;
+        long number;
         int iEntry = (i + ofsEntry) % sectionAct->nEntry;
         const struct tEntry *entryTmp = sectionAct->entries + iEntry;
-        char type = entryTmp->type & eType_MASK_TYPE;
-        char indx = entryTmp->type & eType_MASK_NUM;
+        unsigned char type = entryTmp->type & (eType_MASK_TYPE|eType_MASK_ALTT);
+        unsigned char indx = entryTmp->type & eType_MASK_NUM;
         if (strncmp(token1, entryTmp->name, MAX_LINE_LENGTH)) continue;
 
         ofsEntry = iEntry;
@@ -65,12 +72,15 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
           break;
         // flag in a byte
         case eType_FLAG:
-          if (!strcmp(token2, "y")) SET(*(char*)entryTmp->data, indx);
-          if (!strcmp(token2, "n")) CLR(*(char*)entryTmp->data, indx);
+          if (strcmp(token2, "y") == 0 || strcmp(token2, "1") == 0) {
+            SET(*(char*)entryTmp->data, indx);
+          }
+          if (strcmp(token2, "n") == 0 || strcmp(token2, "0") == 0) {
+            CLR(*(char*)entryTmp->data, indx);
+          }
           break;
         // char short long
-        case eType_INT: {
-          long number;
+        case eType_INT:
           if (!sscand(token2, &number)) continue;
           switch (indx) {
           case 1: *(char *)entryTmp->data = number; break;
@@ -78,10 +88,21 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
           case 4: *(long *)entryTmp->data = number; break;
           }
           break;
-        }
         // raw string
         case eType_SZ:
           strcpy(entryTmp->data, token2);
+          break;
+        // 1-7 bit fields
+        case eType_MASK_ALTT + eType_BITF1:
+        case eType_MASK_ALTT + eType_BITF2:
+        case eType_MASK_ALTT + eType_BITF3:
+        case eType_MASK_ALTT + eType_BITF4:
+        case eType_MASK_ALTT + eType_BITF5:
+        case eType_MASK_ALTT + eType_BITF6:
+        case eType_MASK_ALTT + eType_BITF7:
+          if (!sscand(token2, &number)) continue;
+          size = type >> 5;
+          BF_WR((unsigned char*)entryTmp->data, indx, size, number);
           break;
         }
         values++;
@@ -115,9 +136,10 @@ int uCiniDump(const struct tIni *pIni, char *fileName)
     // Entry loop for each section
     for (iEntry = 0; iEntry < sectionAct->nEntry; ++iEntry) {
       const struct tEntry *entryTmp = sectionAct->entries + iEntry;
-      char type = entryTmp->type & eType_MASK_TYPE;
+      unsigned char type = entryTmp->type & (eType_MASK_TYPE|eType_MASK_ALTT);
+      unsigned char indx = entryTmp->type & eType_MASK_NUM;
       char sgnd = entryTmp->type & eType_SGND;
-      char indx = entryTmp->type & eType_MASK_NUM;
+      unsigned char size;
       strcpy(line, entryTmp->name);
       strcat(line, "=");
 
@@ -144,6 +166,17 @@ int uCiniDump(const struct tIni *pIni, char *fileName)
       // raw string
       case eType_SZ:
         strcat(line, entryTmp->data);
+        break;
+      // 1-7 bit fields
+      case eType_MASK_ALTT + eType_BITF1:
+      case eType_MASK_ALTT + eType_BITF2:
+      case eType_MASK_ALTT + eType_BITF3:
+      case eType_MASK_ALTT + eType_BITF4:
+      case eType_MASK_ALTT + eType_BITF5:
+      case eType_MASK_ALTT + eType_BITF6:
+      case eType_MASK_ALTT + eType_BITF7:
+        size = type >> 5;
+        scatd(line, BF_RD((unsigned char*)entryTmp->data, indx, size));
         break;
       }
       values++;
@@ -204,4 +237,24 @@ void scatd(char *str, long num)
 
   // Concatenate digit to target string
   strcat(str, digit);
+}
+
+// Bitfield operations.
+static unsigned char BF_MASK(int pos, int size)
+{
+  unsigned char mask = (1u << pos+size) - 1;
+  mask &= ~((1 << pos) - 1);
+  return mask;
+}
+
+static unsigned char BF_RD(unsigned char *byte, int pos, int size)
+{
+  return (*byte & BF_MASK(pos, size)) >> pos;
+}
+
+static void BF_WR(unsigned char *byte, int pos, int size, unsigned char data)
+{
+  unsigned char mask = BF_MASK(pos, size);
+  *byte &= ~mask;
+  *byte |= (data << pos) & mask;
 }

@@ -31,13 +31,21 @@
 
 // Values of tEntry::type
 enum eType {
-  eType_MASK_NUM  = 0x0F, // Bit 0-3: size or flag position
+  eType_MASK_NUM  = 0x07, // Bit 0-2: size or flag position
+  eType_MASK_ALTT = 0x08, // Bit 3  : alternate types
   eType_SGND      = 0x10, // Bit 4  : signed
   eType_MASK_TYPE = 0xE0, // Bit 5-7: type
   eType_SZ        = 0x00, // Type string
   eType_INT       = 0x20, // Type char/short/long integer
   eType_FLAG      = 0x40, // Type flag in char
-  eType_FUNC      = 0x60  // Type read/write function
+  eType_FUNC      = 0x60, // Type read/write function
+  eType_BITF1     = 0x20, // Alternate Type 2-bit field
+  eType_BITF2     = 0x40, // Alternate Type 2-bit field
+  eType_BITF3     = 0x60, // Alternate Type 3-bit field
+  eType_BITF4     = 0x80, // Alternate Type 4-bit field
+  eType_BITF5     = 0xA0, // Alternate Type 5-bit field
+  eType_BITF6     = 0xC0, // Alternate Type 6-bit field
+  eType_BITF7     = 0xE0  // Alternate Type 7-bit field
 };
 
 // Flag operations. You're better off to #define flag positions, not masks
