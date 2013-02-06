@@ -73,6 +73,16 @@ struct tIni {
 };
 
 /******************************************************************************
+* Returns: zero if EOF found
+* - line : buffer to read line into
+* - words: address of an array of strings for section, key and value
+* Side effect: words filled up with sectionname, key and value,
+*              if found, otherwise NULL
+******************************************************************************/
+enum { TSEC, TKEY, TVAL };
+void uCiniParseLine(char *line, char *words[]);
+
+/******************************************************************************
 * Returns    : number of values read, excluding sections
 * - ini      : the mapping to your internal data
 * - fileName : filename, or address of a memory/EEPROM block number, whatever

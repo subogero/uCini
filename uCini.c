@@ -14,6 +14,26 @@ static unsigned char BF_RD(unsigned char *byte, int pos, int size);
 static void BF_WR(unsigned char *byte, int pos, int size, unsigned char data);
 
 /******************************************************************************
+* uCiniParseLine
+******************************************************************************/
+void uCiniParseLine(char *line, char *words[])
+{
+    int i;
+    words[TSEC] = words[TKEY] = words[TVAL] = NULL;
+    // Add trailing LF to line if missing
+    i = strlen(line);
+    if (line[i - 1] != '\n') line[i] = '\n';
+    // Look for section
+    if (line[0] == '[') {
+      words[TSEC] = strtok(line, "[]");
+      return;
+    }
+    // Look for key-value pair
+    words[TKEY] = strtok(line, "="); // name  no whitespace, end with =
+    words[TVAL] = strtok(NULL, ";\r\n"); // value between = and CR/LF
+}
+
+/******************************************************************************
 * uCiniParse
 ******************************************************************************/
 int uCiniParse(const struct tIni *pIni, char *fileName)
@@ -29,19 +49,16 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
   while (1) {
     int i;
     char line[MAX_LINE_LENGTH];
-    char *token1, *token2;
-    if (!fgets_(line, MAX_LINE_LENGTH, iniFile)) break; // EOF, leave line loop
-    // Add trailing LF to line if missing
-    i = strlen(line);
-    if (line[i - 1] != '\n') line[i] = '\n';
+    char *words[3];
+    if (!fgets_(line, MAX_LINE_LENGTH, iniFile)) break;
+    uCiniParseLine(line, words);
     // Check for section changes...
-    if (line[0] == '[') {
+    if (words[TSEC] != NULL) {
       sectionAct = NULL;
-      token1 = strtok(line, "[]");
       for (i = 0; i < pIni->nSection; ++i) {
         int iSection = (i + ofsSection) % pIni->nSection;
         const struct tSection *sectionTmp = pIni->sections + iSection;
-        if (!strncmp(token1, sectionTmp->name, MAX_LINE_LENGTH)) {
+        if (!strncmp(words[TSEC], sectionTmp->name, MAX_LINE_LENGTH)) {
           sectionAct = sectionTmp;
           ofsSection = iSection;
           break;
@@ -50,11 +67,9 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
     }
 
     // Skip all entry lines if section invalid,
-    else if (sectionAct) {
+    if (sectionAct) {
       // or parse params within section
-      token1 = strtok(line, "="); // name  no whitespace, end with =
-      token2 = strtok(NULL, "\r\n"); // value between = and CR/LF
-      if (token1 == NULL || token2 == NULL) continue;
+      if (words[TKEY] == NULL || words[TVAL] == NULL) continue;
       for (i = 0; i < sectionAct->nEntry; ++i) {
         unsigned char size;
         long number;
@@ -62,26 +77,26 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
         const struct tEntry *entryTmp = sectionAct->entries + iEntry;
         unsigned char type = entryTmp->type & (eType_MASK_TYPE|eType_MASK_ALTT);
         unsigned char indx = entryTmp->type & eType_MASK_NUM;
-        if (strncmp(token1, entryTmp->name, MAX_LINE_LENGTH)) continue;
+        if (strncmp(words[TKEY], entryTmp->name, MAX_LINE_LENGTH)) continue;
 
         ofsEntry = iEntry;
         switch (type) {
         // function
         case eType_FUNC:
-          ((tIniFunc)entryTmp->data)(token2, 0);
+          ((tIniFunc)entryTmp->data)(words[TVAL], 0);
           break;
         // flag in a byte
         case eType_FLAG:
-          if (strcmp(token2, "y") == 0 || strcmp(token2, "1") == 0) {
+          if (strcmp(words[TVAL], "y") == 0 || strcmp(words[TVAL], "1") == 0) {
             SET(*(char*)entryTmp->data, indx);
           }
-          if (strcmp(token2, "n") == 0 || strcmp(token2, "0") == 0) {
+          if (strcmp(words[TVAL], "n") == 0 || strcmp(words[TVAL], "0") == 0) {
             CLR(*(char*)entryTmp->data, indx);
           }
           break;
         // char short long
         case eType_INT:
-          if (!sscand(token2, &number)) continue;
+          if (!sscand(words[TVAL], &number)) continue;
           switch (indx) {
           case 1: *(char *)entryTmp->data = number; break;
           case 2: *(short*)entryTmp->data = number; break;
@@ -90,7 +105,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
           break;
         // raw string
         case eType_SZ:
-          strcpy(entryTmp->data, token2);
+          strcpy(entryTmp->data, words[TVAL]);
           break;
         // 1-7 bit fields
         case eType_MASK_ALTT + eType_BITF1:
@@ -100,7 +115,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
         case eType_MASK_ALTT + eType_BITF5:
         case eType_MASK_ALTT + eType_BITF6:
         case eType_MASK_ALTT + eType_BITF7:
-          if (!sscand(token2, &number)) continue;
+          if (!sscand(words[TVAL], &number)) continue;
           size = type >> 5;
           BF_WR((unsigned char*)entryTmp->data, indx, size, number);
           break;
