@@ -105,7 +105,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
           break;
         // raw string
         case eType_SZ:
-          strcpy(entryTmp->data, words[TVAL]);
+          strcpy((char*)entryTmp->data, words[TVAL]);
           break;
         // 1-7 bit fields
         case eType_MASK_ALTT + eType_BITF1:
@@ -180,7 +180,7 @@ int uCiniDump(const struct tIni *pIni, char *fileName)
         break;
       // raw string
       case eType_SZ:
-        strcat(line, entryTmp->data);
+        strcat(line, (const char*)entryTmp->data);
         break;
       // 1-7 bit fields
       case eType_MASK_ALTT + eType_BITF1:
