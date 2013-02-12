@@ -18,19 +18,29 @@ static void BF_WR(unsigned char *byte, int pos, int size, unsigned char data);
 ******************************************************************************/
 void uCiniParseLine(char *line, char *words[])
 {
-    int i;
+    char *ptr;
     words[TSEC] = words[TKEY] = words[TVAL] = NULL;
-    // Add trailing LF to line if missing
-    i = strlen(line);
-    if (line[i - 1] != '\n') line[i] = '\n';
     // Look for section
     if (line[0] == '[') {
-      words[TSEC] = strtok(line, "[]");
+      if ((ptr = strchr(line + 1, ']')) != NULL)
+      {
+        words[TSEC] = line + 1;
+        *ptr = 0;
+      }
       return;
     }
     // Look for key-value pair
-    words[TKEY] = strtok(line, "="); // name  no whitespace, end with =
-    words[TVAL] = strtok(NULL, ";\r\n"); // value between = and CR/LF
+    ptr = strchr(line, '=');
+    if (ptr != NULL)
+    {
+      words[TKEY] = line; // name  no whitespace, end with =
+      *ptr = 0;
+      ptr++;
+      words[TVAL] = ptr;
+      while ((*ptr != 0) && (*ptr != ';') && (*ptr != '\r') && (*ptr != '\n'))
+        ptr++;
+      *ptr = 0;
+    }
 }
 
 /******************************************************************************
