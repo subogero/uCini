@@ -37,7 +37,7 @@ void uCiniParseLine(char *line, char *words[])
       *ptr = 0;
       ptr++;
       words[TVAL] = ptr;
-      while ((*ptr != 0) && (*ptr != ';') && (*ptr != '\r') && (*ptr != '\n'))
+      while (*ptr != 0 && *ptr != ';' && *ptr != '\r' && *ptr != '\n')
         ptr++;
       *ptr = 0;
     }
