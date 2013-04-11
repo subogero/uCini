@@ -54,6 +54,7 @@ int uCiniParse(const struct tIni *pIni, char *fileName)
   const struct tSection *sectionAct = NULL;
   FILE_ *iniFile = stdin_;
   if (fileName) iniFile = fopen_(fileName, "r");
+  if (iniFile == NULL) return -1;
 
   // Line loop
   while (1) {
