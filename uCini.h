@@ -1,6 +1,6 @@
 /******************************************************************************
 * (c)      SZABO Gergely   szg@subogero.com
-* License  LGPL v3         http://www.gnu.org/licenses/lgpl.html
+* License  WTFPL v2        http://www.wtfpl.net
 *******************************************************************************
 * A lightweight library to read and write ini files in embedded uC systems.
 *

@@ -1,6 +1,6 @@
 /******************************************************************************
 * (c)      SZABO Gergely   szg@subogero.com
-* License  LGPL v3         http://www.gnu.org/licenses/lgpl.html
+* License  WTFPL v2        http://www.wtfpl.net
 ******************************************************************************/
 #define __uCini_c
 

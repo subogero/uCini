@@ -1,6 +1,6 @@
 /******************************************************************************
 * (c)      SZABO Gergely   szg@subogero.com
-* License  LGPL v3         http://www.gnu.org/licenses/lgpl.html
+* License  WTFPL v2        http://www.wtfpl.net
 *******************************************************************************
 * Template of stdio_.h to connect uCini to your system.
 * It's based on a small subset of stdio.h.
