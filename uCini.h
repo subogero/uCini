@@ -6,7 +6,7 @@
 *
 * Parsing rules for ini formatted files:
 * - Section names: between [] on the beginning of line
-* - Entry names  : before 1st '=' of line
+* - Key names    : before 1st '=' of line
 * - Values       : between 1st '=' and linefeed (CR/LF)
 * Everything is case sensitive. Whitespace is part of each token.
 *
@@ -16,8 +16,9 @@
 * SZ             string zero.term.         all chars between '=' and CR/LF
 * INT+1/2/4      unsigned char/short/long  NOTE: unsigned long Dumped as signed
 * INT+1/2/4+SGND signed   char/short/long  optional '-' before decimal number
-* FLAG + bitpos. 1-bit flags in char       'y' or 'n'
+* FLAG+pos.      1-bit flags in char       'y' or 'n'
 * FUNC           read/write function       all chars between '=' and CR/LF
+* ALTT+BITFx+pos x-bit fields in char      decimal number
 *
 * Notes:
 * -----------------------------------------------------------------------------

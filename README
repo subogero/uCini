@@ -2,20 +2,64 @@ A lightweight library for reading data from and dumping data to ini-files,
 developed for embedded micro-controller environments.
 
 It declares some structure types for mapping your mostly static data
-to ini-file sections and entries. When parsing an ini file, only the values
-mentioned in the file are updated in your internal data.
-You can also dump your entire data structure into an ini file.
-
-Internal data can be accessed as strings, unsigned or signed integers
-(char, short, long), as flags in a char or via custom read/write functions.
+to ini-file sections and keys.
 
 You define the mapping between ini-entries and internal data as an ini file,
-and then uCini_gen.pl will generate the related C-code, including access
-functions for non-addressable symbols.
+and then call uCini_gen.pl to generate the related C-code.
 
-You can connect it to your system by defining an stdio_.h file,
+You can connect uCini to your system by defining an stdio_.h file,
 that shall declare a small subset of the standard stdio.h:
 FILE_ stdin_ stdout_ stderr_ fopen_ fclose_ fgets_ fputs_ 
+This allows using uCini in small systems with no OS/file-system/C-library.
 
-This way it's possible to use uCini even in very small systems
-without OS / file-system / C-library.
+API
+===
+
+uCiniParseLine()
+----------------
+removes ini-punctuation from a line of an ini-file, and initializes 3 pointers
+you supply with its section-name, key-name and value string tokens.
+
+uCiniParse()
+------------
+You supply a filename and a mapping datastructure address, it reads all
+data specified in the file into your internal format.
+Keys specified in the mapping but not mentioned in the ini-file will be
+left unchanged, thus giving you the possiblity to use a default value.
+
+uCiniDump()
+-----------
+Writes all mapped data into the ini-file you specify.
+
+sscand()
+--------
+Lightweight function to read decimal number into internal binary format.
+
+scatd()
+-------
+Lightweight function to append an integer to a string in decimal format.
+
+MAPPING
+=======
+
+Create an ini-file, similar to the ones read, with mapping data specified
+as comments (following a semicolon). The format is as follows:
+
+[section]
+key=;identifier;type
+
+The following types are supported:
+u1 s1	unsigned / signed 1-byte integer
+u2 s2	unsigned / signed 2-byte integer
+u4 s4	unsigned / signed 4-byte integer
+bx	1-bit flag in char, position x (0..7)
+bxy     x-bit (1..7) field in char, position y (0..7)
+sym	symbol without address, like bitfield, access function auto-generated
+fun	user defined access function, name supplied in identifier
+
+Access function signature:
+static void <name>(char *str, int write);
+When write is zero, your function shall convert the value supplied as str
+into your internal representation.
+When write is nonzero, your function shall save your internal data into
+zero-terminated string str.
